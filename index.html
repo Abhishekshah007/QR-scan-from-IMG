@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>QR Code Scanner (Upload)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        --bg: #0f172a; /* slate-900 */
+        --card: #111827; /* gray-900 */
+        --muted: #9ca3af; /* gray-400 */
+        --text: #e5e7eb; /* gray-200 */
+        --accent: #22c55e; /* green-500 */
+        --accent-2: #3b82f6; /* blue-500 */
+        --border: #1f2937; /* gray-800 */
+        --danger: #ef4444; /* red-500 */
+        --warning: #f59e0b; /* amber-500 */
+        --radius: 14px;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+          Arial, Noto Sans, "Apple Color Emoji", "Segoe UI Emoji";
+        color: var(--text);
+        background: radial-gradient(
+            1200px 600px at 20% -10%,
+            #1e293b 0%,
+            #0b1220 35%,
+            #050914 100%
+          ),
+          var(--bg);
+      }
+      header {
+        max-width: 1000px;
+        margin: 32px auto 0;
+        padding: 0 16px;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(1.3rem, 1.2rem + 1.2vw, 2rem);
+        letter-spacing: -0.02em;
+      }
+      .subtitle {
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+      .container {
+        max-width: 1000px;
+        margin: 22px auto 60px;
+        padding: 0 16px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      @media (min-width: 880px) {
+        .grid {
+          grid-template-columns: 1.2fr 1fr;
+          gap: 22px;
+        }
+      }
+      .card {
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.03),
+          rgba(255, 255, 255, 0.01)
+        );
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 18px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(6px);
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .controls {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .file-pill {
+        position: relative;
+        display: inline-flex;
+        overflow: hidden;
+        border-radius: 9999px;
+        border: 1px solid var(--border);
+        background: #0b1220;
+      }
+      .file-pill input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+      }
+      .file-label {
+        padding: 10px 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text);
+        white-space: nowrap;
+        font-weight: 600;
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      button {
+        appearance: none;
+        border: 1px solid var(--border);
+        background: #0b1220;
+        color: var(--text);
+        padding: 10px 14px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: transform 0.04s ease, background 0.2s ease,
+          border-color 0.2s ease;
+        font-weight: 600;
+      }
+      button:hover {
+        background: #0e1628;
+        border-color: #253247;
+      }
+      button:active {
+        transform: translateY(1px) scale(0.99);
+      }
+      .btn-accent {
+        background: linear-gradient(180deg, #1a7f36, #166534);
+        border-color: #165b33;
+      }
+      .btn-accent:hover {
+        background: linear-gradient(180deg, #1e9b41, #18723c);
+      }
+      .btn-blue {
+        background: linear-gradient(180deg, #1e3a8a, #1e40af);
+        border-color: #1e3a8a;
+      }
+      .btn-blue:hover {
+        background: linear-gradient(180deg, #2346ac, #2552cf);
+      }
+      .btn-outline {
+        background: transparent;
+      }
+      .status {
+        margin-top: 10px;
+        font-size: 0.95rem;
+        color: var(--muted);
+      }
+      .preview-wrap {
+        border: 1px dashed #2a3446;
+        border-radius: 14px;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.02);
+      }
+      #preview {
+        width: 100%;
+        max-height: 360px;
+        object-fit: contain;
+        border-radius: 10px;
+        display: block;
+        background: #0b1220;
+      }
+      .result {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid var(--border);
+        padding: 14px;
+        border-radius: 12px;
+        word-break: break-word;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", monospace;
+        font-size: 0.95rem;
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 9999px;
+        font-size: 0.8rem;
+        background: #0b1220;
+        border: 1px solid var(--border);
+        color: var(--muted);
+      }
+      .hidden {
+        display: none;
+      }
+      footer {
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.85rem;
+        padding: 24px 16px 40px;
+      }
+      .reader-hidden {
+        width: 0;
+        height: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>QR Code Scanner (Upload)</h1>
+      <div class="subtitle">
+        Upload an image with a QR code. We’ll decode it locally in your browser.
+      </div>
+    </header>
+    <div class="container">
+      <div class="grid">
+        <!-- Left: Upload and Preview -->
+        <section class="card">
+          <div class="row" style="justify-content: space-between; gap: 12px">
+            <div class="controls">
+              <label class="file-pill">
+                <span class="file-label">📷 Choose image</span>
+                <input id="qr-input-file" type="file" accept="image/*" />
+              </label>
+              <button id="clear-btn" type="button" class="btn-outline">
+                Clear
+              </button>
+            </div>
+            <span id="file-name" class="badge hidden">No file</span>
+          </div>
+          <div class="status" id="status">Select an image with a QR code.</div>
+
+          <div class="preview-wrap" style="margin-top: 12px">
+            <img id="preview" class="hidden" alt="Preview" src="../wait.png"/>
+          </div>
+        </section>
+
+        <!-- Right: Decoded result and actions -->
+        <section class="card">
+          <div class="row" style="justify-content: space-between">
+            <div class="badge">Result</div>
+            <div id="content-type" class="badge hidden">Type: text</div>
+          </div>
+
+          <div id="result-box" class="result hidden">
+            <div id="decoded-text"></div>
+          </div>
+
+          <div class="actions hidden" id="action-bar">
+            <button id="action-open" type="button" class="btn-blue">
+              Open (URL)
+            </button>
+            <button id="action-copy" type="button" class="">Copy</button>
+            <button id="action-custom" type="button" class="btn-accent">
+              Custom Action
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <!-- Hidden reader container required by html5-qrcode -->
+      <div id="reader" class="reader-hidden"></div>
+    </div>
+    <footer>
+      Decoding runs locally. Your image isn’t uploaded to a server.
+      <br/>
+      <p>&copy; <a href="https://www.linkedin.com/in/abhishek-shah007/">Abhishek Shah</a></p>
+    </footer>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
